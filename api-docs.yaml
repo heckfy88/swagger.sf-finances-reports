@@ -354,7 +354,6 @@ components:
           format: uuid
           description: Идентификатор категории
           example: d1a78e9b-cbd9-4f6b-b614-5c9c2f5153ba
-          readOnly: true
         name:
           type: string
           description: Название категории
@@ -379,14 +378,13 @@ components:
           format: uuid
           description: Идентификатор транзакции
           example: d290f1ee-6c54-4b01-90e6-d701748f0851
-          readOnly: true
         category:
           $ref: "#/components/schemas/CategoryDto"
           description: Категория транзакции
         date:
           type: string
           description: Дата транзакции
-          example: 2024-12-01
+          example: 2024.12.01
         description:
           type: string
           description: Описание транзакции
