@@ -1,0 +1,726 @@
+openapi: 3.1.0
+info:
+  title: Financial Reports API
+  version: 1.0.0
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+security:
+- bearerAuth: []
+tags:
+- name: Категории
+  description: Операции с категориями транзакций
+- name: Авторизация
+  description: Сервис авторизации пользователей
+- name: Транзакции
+  description: Операции с финансовыми транзакциями
+paths:
+  /api/v1/transactions:
+    get:
+      tags:
+      - Транзакции
+      summary: Получить список транзакций
+      description: Возвращает все транзакции пользователя
+      operationId: getTransactions
+      parameters:
+      - name: operUid
+        in: header
+        description: Уникальный идентификатор операции
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example: 9f8c1d45-b4e1-4f4b-9ad8-12b3d98f726e
+      responses:
+        "200":
+          description: Список транзакций успешно получен
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransactionDto"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+    post:
+      tags:
+      - Транзакции
+      summary: Создать транзакцию
+      description: Создает новую транзакцию
+      operationId: save
+      parameters:
+      - name: operUid
+        in: header
+        description: Уникальный идентификатор операции
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example: 9f8c1d45-b4e1-4f4b-9ad8-12b3d98f726e
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionDto"
+        required: true
+      responses:
+        "200":
+          description: Транзакция успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionDto"
+        "422":
+          description: Ошибка парсинга тела json
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+    patch:
+      tags:
+      - Транзакции
+      summary: Обновить транзакцию
+      description: Обновляет существующую транзакцию
+      operationId: update
+      parameters:
+      - name: operUid
+        in: header
+        description: Уникальный идентификатор операции
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example: 9f8c1d45-b4e1-4f4b-9ad8-12b3d98f726e
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionDto"
+        required: true
+      responses:
+        "200":
+          description: Транзакция успешно обновлена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionDto"
+        "404":
+          description: Не найдена транзакция
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "422":
+          description: Транзакция не в статусе NEW
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+  /api/v1/transactions/dashboard:
+    post:
+      tags:
+      - Транзакции
+      summary: Получить данные для дашборда
+      description: Возвращает агрегированные данные по фильтру
+      operationId: getDashboard
+      parameters:
+      - name: operUid
+        in: header
+        description: Уникальный идентификатор операции
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example: 9f8c1d45-b4e1-4f4b-9ad8-12b3d98f726e
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionFilterDto"
+        required: true
+      responses:
+        "200":
+          description: Данные дашборда успешно получены
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DashboardDto"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+  /api/auth/login:
+    post:
+      tags:
+      - Авторизация
+      summary: Авторизовать пользователя
+      description: Авторизация пользователя с получением токена для дальнейших запросов.
+      operationId: login
+      parameters:
+      - name: operUid
+        in: header
+        description: Уникальный идентификатор операции
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example: 9f8c1d45-b4e1-4f4b-9ad8-12b3d98f726e
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginDto"
+        required: true
+      responses:
+        "200":
+          description: Успешный логин
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenDto"
+        "401":
+          description: Неверный логин или пароль
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+  /api/v1/transactions/statuses:
+    get:
+      tags:
+      - Транзакции
+      summary: Получить статусы транзакций
+      description: Возвращает статусы состояний транзакции из справочника
+      operationId: getStatuses
+      parameters:
+      - name: operUid
+        in: header
+        description: Уникальный идентификатор операции
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example: 9f8c1d45-b4e1-4f4b-9ad8-12b3d98f726e
+      responses:
+        "200":
+          description: Статусы успешно получены
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransactionStatusDto"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+  /api/v1/transactions/download:
+    get:
+      tags:
+      - Транзакции
+      summary: Скачать CSV-файл с транзакциями
+      description: Позволяет скачать список транзакций в виде CSV-файла.
+      operationId: download
+      parameters:
+      - name: operUid
+        in: header
+        description: Уникальный идентификатор операции
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example: 9f8c1d45-b4e1-4f4b-9ad8-12b3d98f726e
+      responses:
+        "200":
+          description: Файл успешно сгенерирован и отправлен
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        "401":
+          description: Ошибка авторизации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+  /api/v1/transactions/categories:
+    get:
+      tags:
+      - Категории
+      summary: Получить список категорий
+      description: "Возвращает все категории, созданные пользователем"
+      operationId: getCategories
+      parameters:
+      - name: operUid
+        in: header
+        description: Уникальный идентификатор операции
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example: 9f8c1d45-b4e1-4f4b-9ad8-12b3d98f726e
+      responses:
+        "200":
+          description: Список категорий успешно получен
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategoryDto"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+  /api/v1/transactions/{id}:
+    delete:
+      tags:
+      - Транзакции
+      summary: Удалить транзакцию
+      description: Удаляет транзакцию по её идентификатору
+      operationId: delete
+      parameters:
+      - name: operUid
+        in: header
+        description: Уникальный идентификатор операции
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example: 9f8c1d45-b4e1-4f4b-9ad8-12b3d98f726e
+      - name: id
+        in: path
+        description: Идентификатор транзакции
+        required: true
+        schema:
+          type: string
+          format: uuid
+        example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+      responses:
+        "200":
+          description: Транзакция успешно удалена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageDto"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+components:
+  schemas:
+    CategoryDto:
+      type: object
+      description: Категория транзакции
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Идентификатор категории
+          example: d1a78e9b-cbd9-4f6b-b614-5c9c2f5153ba
+          readOnly: true
+        name:
+          type: string
+          description: Название категории
+          example: Зарплата
+        description:
+          type: string
+          description: Описание категории
+          example: Регулярный доход от работодателя
+        type:
+          type: string
+          description: "Тип категории (INCOME — доход, EXPENSE — расход)"
+          enum:
+          - INCOME
+          - EXPENSE
+          example: INCOME
+    TransactionDto:
+      type: object
+      description: Транзакция
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Идентификатор транзакции
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+          readOnly: true
+        category:
+          $ref: "#/components/schemas/CategoryDto"
+          description: Категория транзакции
+        date:
+          type: string
+          description: Дата транзакции
+          example: 2024-12-01
+        description:
+          type: string
+          description: Описание транзакции
+          example: Оплата услуг связи
+        amount:
+          type: number
+          description: Сумма
+          example: 1500.75
+        status:
+          $ref: "#/components/schemas/TransactionStatusDto"
+          description: Статус транзакции
+        senderBank:
+          type: string
+          description: Банк отправителя
+          example: Сбербанк
+        senderAccount:
+          type: string
+          description: Счёт отправителя
+          example: 40817810099910004312
+        receiverUserType:
+          type: string
+          description: Юридический статус (Физ. лицо/Юр. лицо)
+          enum:
+          - PHYSICAL
+          - LEGAL
+          example: LEGAL
+        receiverBank:
+          type: string
+          description: Банк получателя
+          example: Тинькофф
+        receiverAccount:
+          type: string
+          description: Счёт получателя
+          example: 40702810900000001234
+        receiverInn:
+          type: string
+          description: ИНН получателя
+          example: 77070838993
+        receiverPhone:
+          type: string
+          description: Телефон получателя
+          example: "+79991234567"
+    TransactionStatusDto:
+      type: object
+      description: Статус транзакции
+      properties:
+        name:
+          type: string
+          description: Имя статуса (enum name)
+          example: CONFIRMED
+        title:
+          type: string
+          description: Отображаемое название статуса
+          example: Подтвержденная
+        weight:
+          type: integer
+          format: int32
+          description: Приоритет статуса
+          example: 100
+    ErrorDto:
+      type: object
+      description: Ответ об ошибке
+      properties:
+        message:
+          type: string
+          description: Сообщение об ошибке
+          example: Text '2025-01-01' could not be parsed at index 4
+        exceptionName:
+          type: string
+          description: Название исключения
+          example: DateTimeParseException
+        httpStatusCode:
+          type: string
+          description: HTTP статус
+          example: INTERNAL_SERVER_ERROR
+        timestamp:
+          type: string
+          format: date-time
+          description: Момент ошибки
+          example: 2025-05-06T21:18:19.083115
+    TransactionFilterDto:
+      type: object
+      description: Фильтр транзакций
+      properties:
+        senderBanks:
+          type: array
+          description: Список банков-отправителей
+          example:
+          - Тинькофф
+          - Сбер
+          items:
+            type: string
+        receiverBanks:
+          type: array
+          description: Список банков-получателей
+          example:
+          - Тинькофф
+          - Сбер
+          items:
+            type: string
+        statuses:
+          type: array
+          description: Список статусов транзакций
+          example:
+          - CONFIRMED
+          - NEW
+          items:
+            type: string
+        inn:
+          type: string
+          description: ИНН получателя
+          example: 77070838993
+        dateFrom:
+          type: string
+          format: date
+          description: Дата от
+          example: 2024.01.01
+        dateTo:
+          type: string
+          format: date
+          description: Дата до
+          example: 2024.12.31
+        specificDate:
+          type: string
+          format: date
+          description: Конкретная дата
+          example: 2024.06.10
+        amountFrom:
+          type: number
+          description: Минимальная сумма
+          example: 1000.0
+        amountTo:
+          type: number
+          description: Максимальная сумма
+          example: 10000.0
+        categoryType:
+          type: string
+          description: Тип категории
+          enum:
+          - INCOME
+          - EXPENSE
+          example: EXPENSE
+        categoryNames:
+          type: array
+          description: Список названий категорий
+          example:
+          - Продукты
+          - Связь
+          items:
+            type: string
+    BankStatDto:
+      type: object
+      description: Статистика по банкам отправителя и банкам получателей
+      properties:
+        senderBanks:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          description: Банки отправителя
+          example:
+            bankA: 10
+        receiverBanks:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          description: Банки получателя
+          example:
+            bankB: 10
+    CategoryStatDto:
+      type: object
+      description: Статистика по категории
+      properties:
+        category:
+          type: string
+          description: Наименование категории
+          example: Покупки
+        count:
+          type: integer
+          format: int64
+          description: Количество транзакций в категории
+          example: 10
+        totalAmount:
+          type: number
+          description: Сумма транзакций в категории
+          example: 1000
+    CategoryStatsReportDto:
+      type: object
+      description: Статистический отчет по категориям расходов и категориям поступлений
+      properties:
+        incomeStats:
+          type: array
+          description: Список статистики по категориям доходов
+          example:
+          - category: Зарплата
+            count: 1000
+            totalAmount: 1000
+          items:
+            $ref: "#/components/schemas/CategoryStatDto"
+        expenseStats:
+          type: array
+          description: Список статистики по категориям расходов
+          example:
+          - category: Покупки
+            count: 2
+            totalAmount: 200
+          items:
+            $ref: "#/components/schemas/CategoryStatDto"
+    ComparisonStatDto:
+      type: object
+      description: Сравнение количества поступивших средств и потраченных
+      properties:
+        totalIncome:
+          type: number
+          description: Итоговый доход
+          example: 123456.78
+        totalExpense:
+          type: number
+          description: Итоговый расход
+          example: 123456.78
+    DashboardDto:
+      type: object
+      description: Дашборд
+      properties:
+        transactionDynamics:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: "#/components/schemas/TimeGroupStatDto"
+          description: Динамика по количеству транзакций в разрезе неделя/месяц/квартал/год
+        typeDynamics:
+          $ref: "#/components/schemas/TypeDynamicsDto"
+          description: Динамика по типу транзакции
+        incomeVsExpense:
+          $ref: "#/components/schemas/ComparisonStatDto"
+          description: Сравнение количества поступивших средств и потраченных
+        statusCount:
+          $ref: "#/components/schemas/StatusCountDto"
+          description: Количество проведенных транзакций и отмененных транзакций
+        bankStat:
+          $ref: "#/components/schemas/BankStatDto"
+          description: Статистика по банкам отправителя и банкам получателей
+        categoryStat:
+          $ref: "#/components/schemas/CategoryStatsReportDto"
+          description: Статистический отчет по категориям расходов и категориям поступлений
+    StatusCountDto:
+      type: object
+      description: Количество проведенных транзакций и отмененных транзакций
+      properties:
+        completed:
+          type: integer
+          format: int64
+          description: Количество проведенных транзакций
+          example: 100
+        cancelled:
+          type: integer
+          format: int64
+          description: Количество отмененных транзакций
+          example: 10
+    TimeGroupStatDto:
+      type: object
+      description: Количество транзакций за период
+      properties:
+        period:
+          type: string
+          description: "Период: неделя/месяц/квартал/год"
+          example: 2025-W5
+        count:
+          type: integer
+          format: int64
+          description: Количество транзакций
+          example: 10
+    TypeDynamicsDto:
+      type: object
+      description: Количество транзакций по их типу
+      properties:
+        income:
+          type: array
+          description: Количество транзакций поступления за период
+          example:
+          - period: 2021
+            count: 1000
+          items:
+            $ref: "#/components/schemas/TimeGroupStatDto"
+        expense:
+          type: array
+          description: Количество транзакций расхода за период
+          example:
+          - period: 2021
+            count: 1000
+          items:
+            $ref: "#/components/schemas/TimeGroupStatDto"
+    TokenDto:
+      type: object
+      description: JWT токен авторизации
+      properties:
+        token:
+          type: string
+          description: Токен авторизации
+          example: |
+            eyJraWQiOiJteS1oczI1Ni1rZXkiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJmaW5hbmNpYWwtcmVwb3J0cyIsInN1YiI6IjEyM2U0NTY3LWU4OWItMTJkMy1hNDU2LTQyNjYxNDE3NDAwMCIsImV4cCI6MTc0NjU3NjQxOSwiaWF0IjoxNzQ2NTcyODE5fQ.3pwCJz6DC1aqv1PHinLvpFBeM85wrbj_bGvMHbw0ACw
+    LoginDto:
+      type: object
+      description: Объект авторизации пользователя
+      properties:
+        email:
+          type: string
+          description: Электронная почта пользователя
+          example: user@gmail.com
+        password:
+          type: string
+          description: Пароль пользователя
+          example: qwerty123
+      required:
+      - email
+      - password
+    MessageDto:
+      type: object
+      description: Сообщение
+      properties:
+        message:
+          type: string
+          description: Сообщение
+          example: Transaction 'd1a78e9b-cbd9-4f6b-b614-5c9c2f5153ba' deleted successfully
+  securitySchemes:
+    bearerAuth:
+      type: http
+      description: |
+        <b>John Doe:</b><br>{
+          "email": "john.doe@example.com",
+          "password": "passwordA"
+        }
+      name: bearerAuth
+      scheme: bearer
+      bearerFormat: JWT
