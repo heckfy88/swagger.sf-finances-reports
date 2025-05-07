@@ -354,6 +354,7 @@ components:
           format: uuid
           description: Идентификатор категории
           example: d1a78e9b-cbd9-4f6b-b614-5c9c2f5153ba
+          readOnly: true
         name:
           type: string
           description: Название категории
@@ -501,17 +502,17 @@ components:
           type: string
           format: date
           description: Дата от
-          example: 2024.01.01
+          example: 2024-01-01
         dateTo:
           type: string
           format: date
           description: Дата до
-          example: 2024.12.31
+          example: 2024-12-31
         specificDate:
           type: string
           format: date
           description: Конкретная дата
-          example: 2024.06.10
+          example: 2024-06-10
         amountFrom:
           type: number
           description: Минимальная сумма
